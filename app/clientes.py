@@ -18,8 +18,14 @@ class WhatsApp:
         if r.status_code >= 400:
             raise RuntimeError(f"Meta respondió {r.status_code}: {r.text[:300]}")
 
-    async def marcar_leido(self, wa_id: str):
-        await self._post({"messaging_product": "whatsapp", "status": "read", "message_id": wa_id}, "leído")
+    async def marcar_leido(self, wa_id: str, escribiendo: bool = True):
+        """Marca leído y, de paso, enciende los tres puntitos.
+
+        Meta los apaga solos a los 25 s o cuando sale la respuesta, lo que pase primero."""
+        cuerpo = {"messaging_product": "whatsapp", "status": "read", "message_id": wa_id}
+        if escribiendo:
+            cuerpo["typing_indicator"] = {"type": "text"}
+        await self._post(cuerpo, "leído + escribiendo" if escribiendo else "leído")
 
     async def enviar_texto(self, numero: str, texto: str):
         await self._post(

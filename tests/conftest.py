@@ -36,8 +36,8 @@ class FakeWhatsApp:
         self.leidos = []
         self.falla = False
 
-    async def marcar_leido(self, wa_id):
-        self.leidos.append(wa_id)
+    async def marcar_leido(self, wa_id, escribiendo=True):
+        self.leidos.append((wa_id, escribiendo))
 
     async def enviar_texto(self, numero, texto):
         if self.falla:

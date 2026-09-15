@@ -24,6 +24,37 @@ async def test_health(bot):
     assert r.json() == {"status": "ok", "db": "ok"}
 
 
+async def test_muestra_los_tres_puntitos_mientras_responde(bot):
+    bot.modelo.demora = 0.3
+    await bot.post(mensaje("wamid.t1", "¿qué requisitos piden?"))
+    await bot.esperar(0.1)
+    assert bot.wa.leidos == [("wamid.t1", True)]  # puntitos encendidos antes de contestar
+    assert bot.wa.enviados == []
+    await bot.esperar(0.6)
+    assert len(bot.wa.enviados) == 1
+
+
+async def test_los_puntitos_no_se_encienden_si_el_bot_no_va_a_contestar():
+    bot = Bot(NUMEROS_PERMITIDOS="524621111111")
+    await bot.post(mensaje("wamid.t2", de="5214629999999"))
+    await bot.esperar()
+    assert bot.wa.leidos == []
+
+
+async def test_el_cuerpo_de_meta_lleva_el_typing_indicator():
+    from app.clientes import WhatsApp
+
+    enviados = []
+
+    class WA(WhatsApp):
+        async def _post(self, cuerpo, que):
+            enviados.append(cuerpo)
+
+    await WA(Bot().settings).marcar_leido("wamid.x")
+    assert enviados[0]["status"] == "read"
+    assert enviados[0]["typing_indicator"] == {"type": "text"}
+
+
 async def test_el_log_de_acceso_no_expone_el_token(bot, caplog):
     with caplog.at_level(logging.INFO):
         await bot.post(mensaje("wamid.log"))
