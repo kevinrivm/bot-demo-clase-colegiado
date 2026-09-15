@@ -50,6 +50,15 @@ def crear_app(settings=None, store=None, whatsapp=None, modelo=None, reloj=None)
     app.state.motor = motor
     app.state.tareas = tareas
 
+    @app.middleware("http")
+    async def log_de_acceso(request: Request, siguiente):
+        # Log propio sin el token de la URL (uvicorn corre con --no-access-log).
+        respuesta = await siguiente(request)
+        ruta = "/webhook" if request.url.path.startswith("/webhook/") else request.url.path
+        if ruta != "/health" or respuesta.status_code != 200:
+            log.info("%s %s %s", request.method, ruta, respuesta.status_code)
+        return respuesta
+
     @app.get("/health")
     async def health():
         try:

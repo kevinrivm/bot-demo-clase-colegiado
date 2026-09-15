@@ -24,6 +24,14 @@ async def test_health(bot):
     assert r.json() == {"status": "ok", "db": "ok"}
 
 
+async def test_el_log_de_acceso_no_expone_el_token(bot, caplog):
+    with caplog.at_level(logging.INFO):
+        await bot.post(mensaje("wamid.log"))
+        await bot.esperar()
+    assert "POST /webhook 200" in caplog.text
+    assert TOKEN not in caplog.text
+
+
 # CA-1
 async def test_ca1_responde_200_de_inmediato_y_procesa_despues(bot):
     bot.modelo.demora = 2.0
