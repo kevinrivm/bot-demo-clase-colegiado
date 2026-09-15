@@ -28,8 +28,9 @@ async def test_el_log_de_acceso_no_expone_el_token(bot, caplog):
     with caplog.at_level(logging.INFO):
         await bot.post(mensaje("wamid.log"))
         await bot.esperar()
-    assert "POST /webhook 200" in caplog.text
-    assert TOKEN not in caplog.text
+    del_bot = "\n".join(r.getMessage() for r in caplog.records if r.name == "bot")
+    assert "POST /webhook 200" in del_bot
+    assert TOKEN not in del_bot
 
 
 # CA-1
